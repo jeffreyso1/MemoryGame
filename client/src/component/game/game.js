@@ -1,8 +1,8 @@
 import React from "react";
-import * as moment from 'moment';
 
 import { GAME_STATE, CARD_STATE, CARDFLIP_RESULT } from '../../constants';
 import "./game.css";
+
 
 class Game extends React.Component {
     constructor(props) {
@@ -22,7 +22,7 @@ class Game extends React.Component {
         }; 
         this.clickedCard = this.clickedCard.bind(this);   
         this.getElapsedTime = this.getElapsedTime.bind(this); 
-        this.setCardsState = this.setCardsState.bind(this);   
+        this.setCardsState = this.setCardsState.bind(this); 
     }
 
     async componentDidMount() {
@@ -68,15 +68,15 @@ class Game extends React.Component {
         if (this.state.game.createDate == null) {
             return;
         }
-
-        let startTime = moment.utc(this.state.game.createDate).valueOf();
-        let endTime = moment.utc().valueOf();
+        
+        let startTime = new Date(this.state.game.createDate+"Z");
+        let endTime = new Date();
         if (this.state.game.completeDate != null) {
-            endTime = moment.utc(this.state.game.completeDate).valueOf();
+            endTime = new Date(this.state.game.completeDate+"Z");
             clearInterval(this.intervalId);
         }
 
-        let millisecDiff = endTime - startTime;
+        let millisecDiff = endTime.getTime() - startTime.getTime();
 
         this.setState({
             elapsedTime: this.millisecToHHMMSS(millisecDiff)

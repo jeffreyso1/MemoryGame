@@ -1,5 +1,4 @@
 import React from "react";
-import * as moment from 'moment';
 
 import { DIFFICULTY } from "../../constants";
 import "./landing.css";
@@ -103,7 +102,7 @@ class Landing extends React.Component {
                                                 <tr key={i}>
                                                     <td>{ score["error_score"] }</td>
                                                     <td>{ score["difficulty_setting"] }</td>
-                                                    <td>{ moment.utc(score["complete_date"]).local().format('YYYY-MM-DD HH:mm:ss') }</td>
+                                                    <td>{ new Date(score["complete_date"]+"Z").toLocaleString() }</td>
                                                 </tr>
                                             );
                                         })
