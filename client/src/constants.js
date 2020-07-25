@@ -1,6 +1,6 @@
 export const DIFFICULTY = {
     EASY: "EASY", // 6 cards, 3 sets of card
-    MEDIUM: "MEDIUM", // 12 cards, 6 sets of card
+    MEDIUM: "MEDIUM", // 10 cards, 5 sets of card
     HARD: "HARD" // 26 cards, 13 sets of card
 };
 
