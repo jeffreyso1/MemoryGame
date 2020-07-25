@@ -1,5 +1,7 @@
 import React from "react";
+import * as moment from 'moment';
 
+import { GAME_STATE, CARD_STATE, CARDFLIP_RESULT } from '../../constants';
 import "./game.css";
 
 class Game extends React.Component {
@@ -7,48 +9,175 @@ class Game extends React.Component {
         super(props);
 
         this.state = {
-            cards: [
-                // { position: 0, value: 1, status: "NOT_CLEARED"},
-                { position: 0, status: "NOT_CLEARED"},
-                { position: 1, status: "NOT_CLEARED"},
-                { position: 2, status: "NOT_CLEARED"},
-                { position: 3, status: "NOT_CLEARED"},
-                { position: 4, status: "NOT_CLEARED"},
-                { position: 5, status: "NOT_CLEARED"},
-                { position: 6, status: "NOT_CLEARED"},
-                { position: 7, status: "NOT_CLEARED"},
-                { position: 8, status: "NOT_CLEARED"},
-                { position: 9, status: "CLEARED"},
-                { position: 10, status: "NOT_CLEARED"},
-                { position: 11, status: "NOT_CLEARED"},
-                { position: 12, status: "NOT_CLEARED"},
-                { position: 13, status: "NOT_CLEARED"},
-                { position: 14, status: "NOT_CLEARED"},
-                { position: 15, status: "NOT_CLEARED"}
-            ]
-            
+            cards: [],
+            game: {
+                id: "",
+                errorScore: "",
+                createDate: null,
+                state: null,
+                completeDate: null
+            },
+            elapsedTime: "",
+            isDisableInput: false
         }; 
-        this.clickedCard = this.clickedCard.bind(this);       
+        this.clickedCard = this.clickedCard.bind(this);   
+        this.getElapsedTime = this.getElapsedTime.bind(this); 
+        this.setCardsState = this.setCardsState.bind(this);   
     }
 
-    clickedCard(card, i) {
-        if (card.status === "CLEARED") {
+    async componentDidMount() {
+        // load data from param
+        const { match: { params } } = this.props;
+        let response = await fetch("/api/game/" + params["id"]);
+        let responseJson = await response.json();
+        if (responseJson["status"] == null || responseJson["status"] !== "success") {
+            console.log("Game with id not found");
+            this.setState({
+                game: { ...this.state.game, state: GAME_STATE.NOT_FOUND}
+            });
             return;
         }
-        console.log(i);
-        console.log(card);
-        // make request
-        let value = 2;
-        this.setState(({cards}) => ({
-            cards: [
-                ...cards.slice(0,i),
-                {
-                    ...cards[i],
-                    value: value,
-                },
-                ...cards.slice(i+1)
-            ]
-        }));
+        console.log(responseJson);
+
+        let game = responseJson["game"];
+        let cards = responseJson["cards"];
+        
+        this.setState({
+            cards: cards,
+            game: {
+                id: game["id"],
+                errorScore: game["error_score"],
+                createDate: game["create_date"],
+                state: game["state"],
+                completeDate: game["complete_date"] // might be null
+            }
+        });
+        // this update elapsed continuisly
+        this.intervalId = setInterval(this.getElapsedTime, 1000);
+    }
+    
+    componentWillUnmount() {
+        clearInterval(this.intervalId);
+        clearInterval(this.timeoutId);
+    }
+
+    // server time is utc
+    // set elapsed time as string
+    // to either current-createDate or completeDate-createDate
+    getElapsedTime() {
+        if (this.state.game.createDate == null) {
+            return;
+        }
+
+        let startTime = moment.utc(this.state.game.createDate).valueOf();
+        let endTime = moment.utc().valueOf();
+        if (this.state.game.completeDate != null) {
+            endTime = moment.utc(this.state.game.completeDate).valueOf();
+            clearInterval(this.intervalId);
+        }
+
+        let millisecDiff = endTime - startTime;
+
+        this.setState({
+            elapsedTime: this.millisecToHHMMSS(millisecDiff)
+        });
+    }
+
+    millisecToHHMMSS(millisec) {
+        let result = Math.floor(millisec/(1000*60*60)) + "h:" + 
+            Math.floor(millisec/(1000*60))%60 + "m:" + 
+            Math.floor(millisec/1000)%60 + "s";
+
+        return result;
+    }
+
+    async clickedCard(selectedCard, i) {
+        if (selectedCard.state !== CARD_STATE.HIDDEN || this.state.isDisableInput) {
+            return;
+        }
+
+        let response = await fetch("/api/flip/card/" + selectedCard.position + 
+            "/game/" + this.state.game.id);
+        let responseJson = await response.json();
+        if (responseJson["status"] == null || responseJson["status"] !== "success") {
+            return;
+        }
+        console.log(responseJson);
+
+        // card - current card flipped
+        // game - game info
+        // result - result of the current cardflip action
+        let card = responseJson["card"];
+        let game = responseJson["game"];
+        let cardPosition = parseInt(card["position"]);        
+        let actionResult = responseJson["result"];
+
+        let shouldDisableInput = false;
+        let cards = JSON.parse(JSON.stringify(this.state.cards));
+        cards[cardPosition] = {
+            ...cards[cardPosition],
+            value: card.value,
+            state: CARD_STATE.REVEALED
+        };
+        // current card flip leads to a mismatch
+        if (actionResult === CARDFLIP_RESULT.INCORRECT) {
+            shouldDisableInput = true;
+            // flip cards with REVEALED state into a temporary INCORRECT state            
+            let revealedCardsPosition = [];
+            let count = 0;
+            for (const i of cards) {
+                if (i.state === CARD_STATE.REVEALED) {
+                    i.state = CARD_STATE.INCORRECT;
+                    revealedCardsPosition.push(count);
+                }
+                count += 1;
+            }
+            // they will be reverted to hidden in 5 seconds
+            this.timeoutId = setTimeout(()=>this.setCardsState(revealedCardsPosition, CARD_STATE.HIDDEN), 5000);            
+        }
+        // current card flip leads to a match
+        if (actionResult === CARDFLIP_RESULT.CORRECT) {
+            shouldDisableInput = true;
+            // flip cards with REVEALED state into a temporary CORRECT state            
+            let revealedCardsPosition = [];
+            let count = 0;
+            for (const i of cards) {
+                if (i.state === CARD_STATE.REVEALED) {
+                    i.state = CARD_STATE.CORRECT;
+                    revealedCardsPosition.push(count);
+                }
+                count += 1;
+            }
+            // they will be turned to MATCHED in 1 seconds
+            this.timeoutId = setTimeout(()=>this.setCardsState(revealedCardsPosition, CARD_STATE.MATCHED), 1000);            
+        }
+
+        this.setState({
+            cards: cards,
+            game: {
+                id: game["id"],
+                errorScore: game["error_score"],
+                createDate: game["create_date"],
+                state: game["state"],
+                completeDate: game["complete_date"] // might be null
+            },
+            isDisableInput: shouldDisableInput
+        });
+    }
+
+    setCardsState(positions, state) {
+        let cards = JSON.parse(JSON.stringify(this.state.cards));
+        for (const position of positions) {
+            cards[position] = {
+                ...cards[position],
+                value: null,
+                state: state
+            };
+        }
+        this.setState({
+            cards: cards,
+            isDisableInput: false
+        });
     }
 
     render() {
@@ -58,27 +187,41 @@ class Game extends React.Component {
                     <div className="card-body">
                         <div className="row">
                             <div className="col-md-4 ta-center">
-                                Elapsed Time: 12h 22m 33s
+                                Elapsed Time: { this.state.elapsedTime }
                             </div>
                             <div className="col-md-4 ta-center">
-                                Game ID: 12
+                                Game ID: { this.state.game.id }
                             </div>
                             <div className="col-md-4 ta-center">
-                                Error Score: 10
+                                Error Score: { this.state.game.errorScore }
                             </div>
                         </div>
                         <div className="highlight-line"></div>
-                        <div className="row">
-                            {
-                                this.state.cards.map((card, i) => (
-                                    <div className={"game-card " + (card.status === "CLEARED" ? "cleared":"")} 
-                                            onClick={() => this.clickedCard(card, i)} key={i}>
-                                        {/* 1 */}
-                                        { card.value }
-                                    </div>
-                                ))
-                            }
-                        </div>
+                        {this.state.game.state === GAME_STATE.NOT_FOUND &&
+                            <p className="game-not-found">
+                                GAME NOT FOUND
+                            </p>
+                        }
+                        {this.state.game.state === GAME_STATE.COMPLETED &&
+                            <p className="game-completed">
+                                GAME COMPLETED
+                            </p>
+                        }
+                        {this.state.game.state === GAME_STATE.IN_PROGRESS &&
+                            <div className="row">
+                                {
+                                    this.state.cards.map((card, i) => (
+                                        <div className={"game-card " + 
+                                                (card.state === CARD_STATE.MATCHED ? "matched":"") + 
+                                                (card.state === CARD_STATE.CORRECT ? "correct":"") +
+                                                (card.state === CARD_STATE.INCORRECT ? "incorrect":"")} 
+                                                onClick={() => this.clickedCard(card, i)} key={i}>
+                                            { card.value }
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        }
                     </div>
                 </div>
             </div>

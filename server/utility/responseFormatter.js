@@ -26,6 +26,42 @@ exports.errorIncorrectParam = function errorIncorrectParam(response, description
     return response;
 }
 
+exports.errorMaxCardsRevealed = function errorMaxCardsRevealed(response) {
+    response = error(response);
+    response["errorCode"] = "MAXIMUM_CARDS_REVEALED";
+    response["errorDesc"] = "Cannot reveal more than 2 cards";
+
+    return response;
+}
+
+exports.errorCardNotFound = function errorCardNotFound(response) {
+    response = error(response);
+    response["errorCode"] = "CARD_NOT_FOUND";
+
+    return response;
+}
+
+exports.errorCardAlreadyRevealed = function errorCardAlreadyRevealed(response) {
+    response = error(response);
+    response["errorCode"] = "CARD_ALREADY_REVEALED";
+
+    return response;
+}
+
+exports.errorCardAlreadyMatched = function errorCardAlreadyMatched(response) {
+    response = error(response);
+    response["errorCode"] = "CARD_ALREADY_MATCHED";
+
+    return response;
+}
+
+exports.errorGameAlreadyCompleted = function errorGameAlreadyCompleted(response) {
+    response = error(response);
+    response["errorCode"] = "GAME_ALREADY_COMPLETED";
+
+    return response;
+}
+
 exports.errorInternalError = function errorInternalError(response) {
     response = error(response);
     response["errorCode"] = "INTERNAL_ERROR";

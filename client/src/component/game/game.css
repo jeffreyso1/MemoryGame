@@ -18,8 +18,16 @@
 .game-card:hover {
     background-color: #9875b7;
 }
-.game-card.cleared {
+.game-card.matched {
     background-color: white;
+    cursor: default;
+}
+.game-card.correct {
+    background-color: #55922f;
+    cursor: default;
+}
+.game-card.incorrect {
+    background-color: #c74b7f;
     cursor: default;
 }
 @media only screen and (max-width: 768px) {
@@ -27,4 +35,15 @@
         height: 100px;
         width: calc(100%/4 - 8px);
     }
+}
+
+p.game-completed {
+    text-align: center;
+    color: #55922f;
+    font-size: 14px;
+}
+p.game-not-found {
+    text-align: center;
+    color: #c74b7f;
+    font-size: 14px;
 }
