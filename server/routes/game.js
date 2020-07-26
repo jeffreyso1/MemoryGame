@@ -52,14 +52,11 @@ router.post("/create-game", async function(req, res, next) {
         shuffle(cardsToAdd);
 
         let gameId = await gameService.addNewGame(difficultySetting, cardsToAdd);
-        if (gameId === null) {
-            res.status(200).send(responseFormatter.errorInternalError(response));
-            return;
-        }
 
         response["gameId"] = gameId;
         res.status(200).send(responseFormatter.success(response));   
     } catch(error) {
+        console.log(error);
         res.status(200).send(responseFormatter.errorInternalError(response));
     } 
 });
@@ -103,7 +100,7 @@ router.get('/game/:id', async function(req, res, next) {
 router.get("/game-scores", async function(req, res, next) {
     let response = {};
     try {
-        let gameScores10 = await gameService.getGameScores();
+        let gameScores10 = await gameService.getCompletedGameScores();
         response["scores"] = gameScores10;
         res.status(200).send(responseFormatter.success(response));
     } catch(error) {
@@ -179,14 +176,14 @@ router.get("/flip/card/:position/game/:id", async function(req, res, next) {
             response["result"] = constants.CARDFLIP_RESULT.REVEALED_1;
         }
 
+        let previousCard = revealedCards[0];
         // if we revealed 1 card previously
-        if (revealedCards.length === 1) {
+        if (revealedCards.length === 1 && previousCard.id !== currentCard.id) {
             // cannot be the same card as before
-            let previousCard = revealedCards[0];
-            if (previousCard.id === currentCard.id) {
-                res.status(200).send(responseFormatter.errorCardAlreadyRevealed(response));
-                return;
-            }
+            // if (previousCard.id === currentCard.id) {
+            //     res.status(200).send(responseFormatter.errorCardAlreadyRevealed(response));
+            //     return;
+            // }
 
             // if value matches (and it is not the same card)
             if (previousCard.content_value === currentCard.content_value) {

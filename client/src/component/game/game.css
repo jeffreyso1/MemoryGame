@@ -1,6 +1,6 @@
 .game-card {
     height: 160px;
-    width: calc(100%/5 - 8px);
+    width: calc(100%/7 - 8px);
     border-radius: 5px;
     box-shadow: 2px 2px 3px #000;
     margin-right: 8px;
@@ -30,6 +30,12 @@
     background-color: #c74b7f;
     cursor: default;
 }
+@media only screen and (max-width: 1200px) {
+    .game-card {
+        height: 160px;
+        width: calc(100%/5 - 8px);
+    }
+}
 @media only screen and (max-width: 768px) {
     .game-card {
         height: 100px;
@@ -46,4 +52,9 @@ p.game-not-found {
     text-align: center;
     color: #c74b7f;
     font-size: 14px;
+}
+
+.back-button {
+    margin: 0 auto;
+    margin-top: 14px;
 }

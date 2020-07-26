@@ -23,6 +23,7 @@ class Game extends React.Component {
         this.clickedCard = this.clickedCard.bind(this);   
         this.getElapsedTime = this.getElapsedTime.bind(this); 
         this.setCardsState = this.setCardsState.bind(this); 
+        this.clickedBack = this.clickedBack.bind(this);
     }
 
     async componentDidMount() {
@@ -180,6 +181,10 @@ class Game extends React.Component {
         });
     }
 
+    clickedBack() {
+        this.props.history.push("/");
+    }
+
     render() {
         return (
             <div className="main-content row">
@@ -203,9 +208,17 @@ class Game extends React.Component {
                             </p>
                         }
                         {this.state.game.state === GAME_STATE.COMPLETED &&
-                            <p className="game-completed">
-                                GAME COMPLETED
-                            </p>
+                            <div>
+                                <p className="game-completed">
+                                    GAME COMPLETED
+                                </p>
+                                <div className="row">
+                                    <button type="button" className="btn btn-primary back-button"
+                                        onClick={this.clickedBack}>
+                                            Back
+                                    </button>  
+                                </div>
+                            </div>
                         }
                         {this.state.game.state === GAME_STATE.IN_PROGRESS &&
                             <div className="row">
@@ -221,7 +234,7 @@ class Game extends React.Component {
                                     ))
                                 }
                             </div>
-                        }
+                        }                        
                     </div>
                 </div>
             </div>

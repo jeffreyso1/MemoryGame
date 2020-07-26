@@ -16,12 +16,10 @@ exports.addNewGame = async function(difficultySetting, cards) {
         }
 
         await db.run("COMMIT", []);
-    } catch (e) {
-        console.log(e);
-        await db.run('ROLLBACK', []);
-        gameId = null;
-    } finally {
         return gameId;
+    } catch (error) {
+        await db.run('ROLLBACK', []);
+        throw "gameService.addNewGame error";
     }
 }
 
@@ -34,11 +32,11 @@ exports.getGameById = async function(gameId) {
         }
         return res[0];
     } catch (error) {
-        return null;
+        throw "gameService.getGameById error";
     }
 }
 
-exports.getGameScores = async function() {
+exports.getCompletedGameScores = async function() {
     try {
         const res = await db.all("SELECT * FROM game WHERE " + 
             "state = 'COMPLETED' ORDER BY complete_date DESC " + 
@@ -46,7 +44,7 @@ exports.getGameScores = async function() {
 
         return res;
     } catch (error) {
-        return null;
+        throw "gameService.getCompletedGameScores error";
     }
 }
 
@@ -56,7 +54,7 @@ exports.setGameComplete = async function(gameId) {
             "complete_date = current_timestamp WHERE id = ?", [gameId]);
         return true;
     } catch (error) {
-        return false;
+        throw "gameService.setGameComplete error";
     }
 }
 
@@ -66,7 +64,7 @@ exports.setGameIncrementErrorScore = async function(gameId) {
             "error_score + 1 WHERE id = ?", [gameId]);
         return true;
     } catch (error) {
-        return false;
+        throw "gameService.setGameIncrementErrorScore error";
     }
 }
 
@@ -76,7 +74,7 @@ exports.getCardsByGameId = async function(gameId) {
             "game_id = ? ORDER BY position ASC", [gameId]);
         return res;
     } catch (error) {
-        return null;
+        throw "gameService.getCardsByGameId error";
     }
 }
 
@@ -87,7 +85,7 @@ exports.getCardsByGameIdState = async function(gameId, state) {
             [gameId, state]);
         return res;
     } catch (error) {
-        return null;
+        throw "gameService.getCardsByGameIdState error";
     }
 }
 
@@ -101,7 +99,7 @@ exports.getCardsByGameIdPosition = async function(gameId, position) {
         }
         return res[0];
     } catch (error) {
-        return null;
+        throw "gameService.getCardsByGameIdPosition error";
     }
 }
 
@@ -111,7 +109,7 @@ exports.setCardStateById = async function(newState, cardId) {
             "WHERE id = ?", [newState, cardId]);
         return true;
     } catch (error) {
-        return false;
+        throw "gameService.setCardStateById error";
     }
 }
 
@@ -121,6 +119,6 @@ exports.setCardsStateByIds = async function(newState, cardId1, cardId2) {
             "WHERE id = ? OR id = ?", [newState, cardId1, cardId2]);
         return true;
     } catch (error) {
-        return false;
+        throw "gameService.setCardsStateByIds error";
     }
 }
