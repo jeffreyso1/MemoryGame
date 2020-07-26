@@ -26,7 +26,10 @@ There are few minor modifications to the requirements,
 
    However, this **behaviour can be removed** by removing  || this.state.isDisableInput at /client/src/component/game/game.js line 95 with **no problems**
 
-# Screeshots at /screeshots
+# Screeshots
+
+<img src="./screenshots/landing.png" width="50%">
+<img src="./screenshots/game.png" width="50%">
 
 # Sample Database
 
