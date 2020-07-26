@@ -18,13 +18,13 @@ There are few minor modifications to the requirements,
 
 1. EASY will launch a game with **6 cards instead of 5**, HARD will launch a game with **26 cards instead of 25**
 
-Because if there are odd numbers of card, the game can never be finished
+   Because if there are odd numbers of card, the game can never be finished
 
 2. If the 2 cards picked were incorrect, user **WILL NOT be able to select** another card until **AFTER the cards fade in 5 seconds**
 
-Letting users pick cards before previous selections dissappear will make the game too easy
+   Letting users pick cards before previous selections dissappear will make the game too easy
 
-However, this **behaviour can be removed** by removing  || this.state.isDisableInput at /client/src/component/game/game.js line 95 with **no problems**
+   However, this **behaviour can be removed** by removing  || this.state.isDisableInput at /client/src/component/game/game.js line 95 with **no problems**
 
 # Screeshots at /screeshots
 
