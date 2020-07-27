@@ -26,10 +26,6 @@ There are few minor modifications to the requirements,
 
    However, this **behaviour can be removed** by removing  || this.state.isDisableInput at /client/src/component/game/game.js line 95 with **no problems**
 
-# Screeshots
-
-<img src="./screenshots/landing.png" width="50%">
-<img src="./screenshots/game.png" width="50%">
 
 # Routes
 
@@ -49,6 +45,11 @@ Get scores of last 10 completed games
 GET localhost:5000/api/flip/card/:position/game/:id
 Flip card of game
 ```
+
+# Screeshots
+
+<img src="./screenshots/landing.png" width="50%">
+<img src="./screenshots/game.png" width="50%">
 
 # Sample Database
 
