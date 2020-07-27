@@ -31,6 +31,25 @@ There are few minor modifications to the requirements,
 <img src="./screenshots/landing.png" width="50%">
 <img src="./screenshots/game.png" width="50%">
 
+# Routes
+
+There are 4 routes from the server
+
+```
+POST localhost:5000/api/create-game
+body: { "difficulty": "EASY" } // or "MEDIUM" or "HARD"
+Create a game with cards
+
+GET localhost:5000/api/game/:id
+Get info about a game with id
+
+GET localhost:5000/api/game-scores
+Get scores of last 10 completed games
+
+GET localhost:5000/api/flip/card/:position/game/:id
+Flip card of game
+```
+
 # Sample Database
 
 ```
